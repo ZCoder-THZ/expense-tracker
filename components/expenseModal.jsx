@@ -1,8 +1,19 @@
-import React from 'react'
+import React, { useRef } from 'react'
 
-const expenseModal = ({ isExpenseModalOpen, setExpenseModalOpen }) => {
-    const handleSubmit = () => {
+const expenseModal = ({ isExpenseModalOpen, setExpenseModalOpen, expenses, setExpense }) => {
+    const expenseRef = useRef('')
+    const descriptionRef = useRef('');
+    const handleSubmit = (e) => {
+        e.preventDefault();
+        const expenseVal = expenseRef.current.value;
+        const descriptionValue = descriptionRef.current.value;
+        setExpense((prevExpense) => [
+            ...prevExpense,
+            { id: prevExpense.length + 1, expense: Number(expenseVal), description: descriptionValue },
 
+        ])
+
+        setExpenseModalOpen(!isExpenseModalOpen)
     }
 
     return (
@@ -18,7 +29,7 @@ const expenseModal = ({ isExpenseModalOpen, setExpenseModalOpen }) => {
                             type="number"
                             id="income"
                             name="income"
-                            // ref={incomeRef}
+                            ref={expenseRef}
                             className="w-full text-black border p-2 rounded-md"
                         />
                     </div>
@@ -30,7 +41,7 @@ const expenseModal = ({ isExpenseModalOpen, setExpenseModalOpen }) => {
                             id="description"
                             name="description"
 
-                            // ref={descriptionRef}
+                            ref={descriptionRef}
 
                             className="w-full text-black border p-2 rounded-md"
                         ></textarea>

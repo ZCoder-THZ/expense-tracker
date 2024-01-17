@@ -12,10 +12,9 @@ export default function Home() {
   const [expenses, setExpense] = useState([
     { id: 1, expense: 1000, description: 'First Expense' },
     { id: 2, expense: 1500, description: 'Second Expense' },
-    { id: 3, expense: 1200, description: 'Third Expense' },
-    { id: 4, expense: 2000, description: 'Fourth Expense' },
-    { id: 5, expense: 1800, description: 'Fifth Expense' },
+
   ]);
+  const [totalExpense, setTotalExpense] = useState(0)
 
   // ...
 
@@ -35,14 +34,34 @@ export default function Home() {
 
   const [totalIncome, setTotalIncome] = useState(0)
 
+  const subtract = ({ id, expense }) => {
+    setTotalIncome(prevTotalIncome => {
+      // Check if expense is greater than or equal to prevTotalIncome
+      if (expense >= prevTotalIncome) {
+        // If so, leave total income unchanged
+        return prevTotalIncome;
+      }
 
+      // Subtract the expense from prevTotalIncome and ensure it doesn't go below 0
+      return Math.max(0, prevTotalIncome - expense);
+    });
+  };
 
+  const removeExpense = ({ id }) => {
+    // Use filter to create a new array excluding the expense with the specified id
+    const updatedExpenses = expenses.filter((expense) => expense.id !== id);
+
+    // Set the state with the updated array
+    setExpense(updatedExpenses);
+  };
   useEffect(() => {
     const newTotalValue = incomes.reduce((accVal, curVal) => {
       return accVal + curVal.income;
     }, 0);
     setTotalIncome(newTotalValue);
   }, [incomes]);
+
+
   return (
     <div>
       <div className="bg-blue-500 text-white p-4">
@@ -81,14 +100,14 @@ export default function Home() {
             </div>
             {
               expenses.map(expense => (
-                <div className="bg-white p-4 rounded-md shadow-md mb-4">
+                <div key={expense.id} className="bg-white p-4 rounded-md shadow-md mb-4">
                   <h3 className="text-lg font-semibold mb-2 text-gray-500">{expense.description}</h3>
                   <p className="text-gray-600">Amount{expense.expense}</p>
                   <div className="flex justify-between items-center">
                     <p className="text-gray-600"></p>
                     <div className="flex justify-around items-center space-x-3">
-                      <button className='text-gray-500'>Add</button>
-                      <button className='text-gray-500'>Remove</button>
+                      <button className='text-gray-500' onClick={() => { subtract(expense) }}>Spend</button>
+                      <button className='text-gray-500' onClick={() => { removeExpense(expense) }}>Remove</button>
                     </div>
                   </div>
                 </div>
@@ -118,7 +137,7 @@ export default function Home() {
           setHistoryIncomeModalOpen={setHistoryIncomeModalOpen} /> : ''
       }
       {
-        isExpenseModalOpen ? <ExpenseModal isExpenseModalOpen={isExpenseModalOpen} setExpenseModalOpen={setExpenseModalOpen} /> : ''
+        isExpenseModalOpen ? <ExpenseModal isExpenseModalOpen={isExpenseModalOpen} setExpenseModalOpen={setExpenseModalOpen} expenses={expenses} setExpense={setExpense} /> : ''
       }
 
     </div >
