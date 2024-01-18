@@ -20,6 +20,8 @@ const incomeHistory = ({ incomes, isHistoryIncomeModalOpen, setHistoryIncomeModa
                                 <div key={income.id} className="bg-gray-100 p-4 rounded-md shadow-md mb-4">
                                     <p className="text-lg text-gray-600 font-semibold mb-2">Income: ${income.income}</p>
                                     <p className="text-gray-600">{income.description}</p>
+                                    <p className="text-gray-600">{income.created_at}</p>
+
                                 </div>
                             ))}
                             {incomes.length === 0 && (

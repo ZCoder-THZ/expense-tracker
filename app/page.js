@@ -4,41 +4,25 @@ import { useState, useRef, useEffect } from 'react'
 import Modal from '@/components/modal';
 import ExpenseModal from '@/components/expenseModal';
 import IncomeHistory from '@/components/incomeHistory';
+import SmallModalBox from '../components/smallModal';
+import axios from 'axios';
+import moment from 'moment';
 export default function Home() {
-  // const [isOpen, setIsopen] = useState(false);
   const [isIncomeModalOpen, setIncomeModalOpen] = useState(false);
   const [isExpenseModalOpen, setExpenseModalOpen] = useState(false);
   const [isHistoryIncomeModalOpen, setHistoryIncomeModalOpen] = useState(false);
-  const [expenses, setExpense] = useState([
-    { id: 1, expense: 1000, description: 'First Expense' },
-    { id: 2, expense: 1500, description: 'Second Expense' },
-
-  ]);
+  const [expenses, setExpense] = useState([]);
+  const [incomes, setIncome] = useState([]);
   const [totalExpense, setTotalExpense] = useState(0)
-
-  // ...
-
-  // When opening the income modal
-
-
-  // When closing the income modal
-
-
-  const [incomes, setIncome] = useState([
-    { id: 1, income: 1000, description: 'First income' },
-    { id: 2, income: 1500, description: 'Second income' },
-    { id: 3, income: 1200, description: 'Third income' },
-    { id: 4, income: 2000, description: 'Fourth income' },
-    { id: 5, income: 1800, description: 'Fifth income' },
-  ]);
-
   const [totalIncome, setTotalIncome] = useState(0)
+  const [smallModalOpen, setSmallModalOpen] = useState(false)
 
   const subtract = ({ id, expense }) => {
     setTotalIncome(prevTotalIncome => {
       // Check if expense is greater than or equal to prevTotalIncome
       if (expense >= prevTotalIncome) {
         // If so, leave total income unchanged
+        setSmallModalOpen(!smallModalOpen)
         return prevTotalIncome;
       }
 
@@ -47,14 +31,44 @@ export default function Home() {
     });
   };
 
-  const removeExpense = ({ id }) => {
+  const removeExpense = async ({ id }) => {
+    const response = await axios.delete(`${process.env.BASE_URL}/expenses/${id}`)
     // Use filter to create a new array excluding the expense with the specified id
     const updatedExpenses = expenses.filter((expense) => expense.id !== id);
 
     // Set the state with the updated array
     setExpense(updatedExpenses);
   };
+  const fetchIncomesData = async () => {
+    try {
+      const response = await axios.get(`${process.env.BASE_URL}/incomes`);
+      const incomeData = await response.data.data
+      setIncome(incomeData)
+    } catch (error) {
+
+    }
+  }
+  const fetchExpensesData = async () => {
+    try {
+      const response = await axios.get(`${process.env.BASE_URL}/expenses`);
+      const expenseData = await response.data.data
+      setExpense(expenseData)
+
+    } catch (error) {
+
+    }
+  }
+
   useEffect(() => {
+    // Fetch incomes data from the API
+    fetchIncomesData();
+    fetchExpensesData();
+
+
+  }, []); // Run once when the component mounts
+
+  useEffect(() => {
+    // Calculate total income when incomes state changes
     const newTotalValue = incomes.reduce((accVal, curVal) => {
       return accVal + curVal.income;
     }, 0);
@@ -90,7 +104,12 @@ export default function Home() {
             <h1 className="text-2xl font-semibold">Total Income</h1>
             <p className="text-lg">{totalIncome}</p>
           </div>
+          {
+            smallModalOpen ?
+              <SmallModalBox smallModalOpen={smallModalOpen} setSmallModalOpen={setSmallModalOpen} />
 
+              : ""
+          }
           <div>
             <div className="flex justify-between items-center">
               <h2 className="text-xl font-semibold mb-4">Expense List</h2>
@@ -104,21 +123,15 @@ export default function Home() {
                   <h3 className="text-lg font-semibold mb-2 text-gray-500">{expense.description}</h3>
                   <p className="text-gray-600">Amount{expense.expense}</p>
                   <div className="flex justify-between items-center">
-                    <p className="text-gray-600"></p>
+                    <p className="text-gray-600">created At {expense.created_at}</p>
                     <div className="flex justify-around items-center space-x-3">
                       <button className='text-gray-500' onClick={() => { subtract(expense) }}>Spend</button>
                       <button className='text-gray-500' onClick={() => { removeExpense(expense) }}>Remove</button>
                     </div>
                   </div>
                 </div>
-
-
               ))
             }
-
-
-
-
           </div>
 
         </div>

@@ -1,15 +1,23 @@
 import React, { useRef } from 'react'
-
+import axios from 'axios';
 const expenseModal = ({ isExpenseModalOpen, setExpenseModalOpen, expenses, setExpense }) => {
     const expenseRef = useRef('')
     const descriptionRef = useRef('');
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
         const expenseVal = expenseRef.current.value;
         const descriptionValue = descriptionRef.current.value;
+        // Send a POST request to the server to add an expense
+        const response = await axios.post(`${process.env.BASE_URL}/expenses`, {
+            expense: Number(expenseVal),
+            description: descriptionValue
+        });
+        const data = await response.data.data //Extract the data from the API response (assuming the response structure)
+
+        //  Update the state with the new expense data
         setExpense((prevExpense) => [
+            { id: data.id, expense: Number(expenseVal), description: descriptionValue },
             ...prevExpense,
-            { id: prevExpense.length + 1, expense: Number(expenseVal), description: descriptionValue },
 
         ])
 

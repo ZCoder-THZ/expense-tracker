@@ -1,16 +1,26 @@
 import React, { useRef } from 'react'
-
-const modal = ({ isIncomeModalOpen, setIncomeModalOpen, setIncome, }) => {
+import axios from 'axios';
+const modal = ({ isIncomeModalOpen, setIncomeModalOpen, setIncome, incomes }) => {
     const incomeRef = useRef('');
     const descriptionRef = useRef('');
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
         const incomeValue = incomeRef.current.value;
         const descriptionValue = descriptionRef.current.value;
+        // Send a POST request to the server to add an Income
 
+        const response = await axios.post(`${process.env.BASE_URL}/incomes`, {
+            income: Number(incomeValue),
+            description: descriptionValue
+        })
+        // Extract the data from the API response (assuming the response structure)
+        const data = await response.data.data;
+
+
+        // update the incomes
         setIncome((prevIncomes) => [
             ...prevIncomes,
-            { id: prevIncomes.length + 1, income: Number(incomeValue), description: descriptionValue },
+            { id: data.id, income: Number(incomeValue), description: descriptionValue },
         ]);
         setIncomeModalOpen(!isIncomeModalOpen)
     };
