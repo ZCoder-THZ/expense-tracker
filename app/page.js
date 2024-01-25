@@ -6,8 +6,13 @@ import ExpenseModal from '@/components/expenseModal';
 import IncomeHistory from '@/components/incomeHistory';
 import SmallModalBox from '../components/smallModal';
 import axios from 'axios';
+import { useAuth } from '@/context/AuthContext';
 import moment from 'moment';
+import Navbar from '@/components/Navbar';
+import { useRouter } from 'next/navigation';
 export default function Home() {
+  const { auth } = useAuth()
+  const router = useRouter();
   const [isIncomeModalOpen, setIncomeModalOpen] = useState(false);
   const [isExpenseModalOpen, setExpenseModalOpen] = useState(false);
   const [isHistoryIncomeModalOpen, setHistoryIncomeModalOpen] = useState(false);
@@ -60,11 +65,13 @@ export default function Home() {
   }
 
   useEffect(() => {
+    if (!auth) {
+      return router.push('/signup')
+    }
+
     // Fetch incomes data from the API
     fetchIncomesData();
     fetchExpensesData();
-
-
   }, []); // Run once when the component mounts
 
   useEffect(() => {
@@ -78,25 +85,11 @@ export default function Home() {
 
   return (
     <div>
-      <div className="bg-blue-500 text-white p-4">
-        <nav className="flex justify-between items-center">
-          <div className='flex jusitfy-between items-center'>
-            <h1 className="text-xl font-semibold">Expense Tracker</h1>
-
-          </div>
-          <div className="flex space-x-4">
-            <a href="#" className="hover:underline">Login</a>
-            <a href="#" className="hover:underline">Logout</a>
-            <a href="#" onClick={() => {
-              setHistoryIncomeModalOpen(!isHistoryIncomeModalOpen)
-            }} className="hover:underline">Income History</a>
-
-            <a href="#" onClick={() => {
-              setIncomeModalOpen(!isIncomeModalOpen)
-            }} className="hover:underline">Add Income</a>
-          </div>
-        </nav>
-      </div>
+      <Navbar setHistoryIncomeModalOpen={setHistoryIncomeModalOpen}
+        isHistoryIncomeModalOpen={isHistoryIncomeModalOpen}
+        setIncomeModalOpen={setIncomeModalOpen}
+        isIncomeModalOpen={isIncomeModalOpen}
+      />
       <main className="flex min-h-screen flex-col items-center justify-between p-24">
         <div className="container mx-auto p-4">
 
