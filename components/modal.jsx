@@ -1,6 +1,6 @@
 import React, { useRef } from 'react'
 import axios from 'axios';
-const modal = ({ isIncomeModalOpen, setIncomeModalOpen, setIncome, incomes }) => {
+const modal = ({ isIncomeModalOpen, setIncomeModalOpen, setIncome, incomes, token }) => {
     const incomeRef = useRef('');
     const descriptionRef = useRef('');
     const handleSubmit = async (e) => {
@@ -12,7 +12,12 @@ const modal = ({ isIncomeModalOpen, setIncomeModalOpen, setIncome, incomes }) =>
         const response = await axios.post(`${process.env.BASE_URL}/incomes`, {
             income: Number(incomeValue),
             description: descriptionValue
-        })
+        }, {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        }
+        )
         // Extract the data from the API response (assuming the response structure)
         const data = await response.data.data;
 

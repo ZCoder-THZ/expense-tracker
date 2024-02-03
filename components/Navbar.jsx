@@ -5,7 +5,7 @@ import Link from 'next/link'
 const Navbar = ({ setHistoryIncomeModalOpen, isHistoryIncomeModalOpen, setIncomeModalOpen, isIncomeModalOpen }) => {
     const { auth, logout } = useAuth()
     return (
-        <div className="bg-blue-500 text-white p-4">
+        <div className="bg-blue-500 text-white p-4 ">
             <nav className="flex justify-between items-center">
                 <div className='flex jusitfy-between items-center'>
                     <Link href="/" className="text-xl font-semibold">Expense Tracker</Link>

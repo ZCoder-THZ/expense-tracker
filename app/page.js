@@ -11,9 +11,10 @@ import moment from 'moment';
 import Navbar from '@/components/Navbar';
 import { useRouter } from 'next/navigation';
 export default function Home() {
-  const { auth } = useAuth()
+  const { checkTokenInLocal } = useAuth()
   const router = useRouter();
   const [isIncomeModalOpen, setIncomeModalOpen] = useState(false);
+  const [token, setToken] = useState('');
   const [isExpenseModalOpen, setExpenseModalOpen] = useState(false);
   const [isHistoryIncomeModalOpen, setHistoryIncomeModalOpen] = useState(false);
   const [expenses, setExpense] = useState([]);
@@ -37,25 +38,45 @@ export default function Home() {
   };
 
   const removeExpense = async ({ id }) => {
-    const response = await axios.delete(`${process.env.BASE_URL}/expenses/${id}`)
+    const response = await axios.delete(`${process.env.BASE_URL}/expenses/${id}`, {
+      headers: {
+        Authorization: `Bearer ${getToken}`
+      }
+    })
     // Use filter to create a new array excluding the expense with the specified id
     const updatedExpenses = expenses.filter((expense) => expense.id !== id);
 
     // Set the state with the updated array
     setExpense(updatedExpenses);
   };
-  const fetchIncomesData = async () => {
-    try {
-      const response = await axios.get(`${process.env.BASE_URL}/incomes`);
-      const incomeData = await response.data.data
-      setIncome(incomeData)
-    } catch (error) {
+  const axios = require('axios');
 
+  const fetchIncomesData = async (getToken) => {
+    try {
+      const response = await axios.get(`${process.env.BASE_URL}/incomes`, {
+        headers: {
+          Authorization: `Bearer ${getToken}`
+        }
+      });
+
+      const incomeData = response.data.data;
+      // Assuming setIncome is a function to update state or perform some action with the fetched data
+      setIncome(incomeData);
+    } catch (error) {
+      // Handle errors
+      console.error('Error fetching income data:', error);
+      // Add your error handling logic here
     }
   }
-  const fetchExpensesData = async () => {
+
+  const fetchExpensesData = async (getToken) => {
     try {
-      const response = await axios.get(`${process.env.BASE_URL}/expenses`);
+      const response = await axios.get(`${process.env.BASE_URL}/expenses`, {
+        headers: {
+          Authorization: `Bearer ${getToken}`
+        }
+      });
+
       const expenseData = await response.data.data
       setExpense(expenseData)
 
@@ -65,14 +86,42 @@ export default function Home() {
   }
 
   useEffect(() => {
-    if (!auth) {
-      return router.push('/signup')
-    }
+    const fetchData = async () => {
+      try {
+        // Check if token exists in local storage
+        await checkTokenInLocal();
+        const getToken = await localStorage.getItem('token');
 
-    // Fetch incomes data from the API
-    fetchIncomesData();
-    fetchExpensesData();
-  }, []); // Run once when the component mounts
+        // If token does not exist or is undefined, redirect to sign-in page
+        if (!getToken || getToken === undefined) {
+          localStorage.removeItem('token');
+          return router.push('/signin');
+        }
+        // Set the token state
+        setToken(getToken);
+
+
+        // Fetch incomes data using the updated token state
+        await fetchIncomesData(getToken);
+
+
+        // Fetch expenses data (assuming this function exists)
+        await fetchExpensesData(getToken);
+
+        // Now all asynchronous operations have completed
+      } catch (error) {
+        console.error('Error during data fetching:', error);
+        // Handle errors as needed
+      }
+    };
+
+    fetchData(); // Call the asynchronous function
+
+  }, []); // Dependencies array
+  // Call the asynchronous function
+
+  // Run once when the component mounts
+  // Run once when the component mounts
 
   useEffect(() => {
     // Calculate total income when incomes state changes
@@ -129,9 +178,9 @@ export default function Home() {
 
         </div>
       </main>
-
       <Modal totalIncome={totalIncome}
         setTotalIncome={setTotalIncome}
+        token={token}
         isIncomeModalOpen={isIncomeModalOpen}
         setIncomeModalOpen={setIncomeModalOpen}
         incomes={incomes}
@@ -143,7 +192,7 @@ export default function Home() {
           setHistoryIncomeModalOpen={setHistoryIncomeModalOpen} /> : ''
       }
       {
-        isExpenseModalOpen ? <ExpenseModal isExpenseModalOpen={isExpenseModalOpen} setExpenseModalOpen={setExpenseModalOpen} expenses={expenses} setExpense={setExpense} /> : ''
+        isExpenseModalOpen ? <ExpenseModal isExpenseModalOpen={isExpenseModalOpen} setExpenseModalOpen={setExpenseModalOpen} expenses={expenses} setExpense={setExpense} token={token} /> : ''
       }
 
     </div >

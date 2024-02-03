@@ -1,6 +1,6 @@
 import React, { useRef } from 'react'
 import axios from 'axios';
-const expenseModal = ({ isExpenseModalOpen, setExpenseModalOpen, expenses, setExpense }) => {
+const expenseModal = ({ isExpenseModalOpen, setExpenseModalOpen, expenses, token, setExpense }) => {
     const expenseRef = useRef('')
     const descriptionRef = useRef('');
     const handleSubmit = async (e) => {
@@ -11,6 +11,10 @@ const expenseModal = ({ isExpenseModalOpen, setExpenseModalOpen, expenses, setEx
         const response = await axios.post(`${process.env.BASE_URL}/expenses`, {
             expense: Number(expenseVal),
             description: descriptionValue
+        }, {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
         });
         const data = await response.data.data //Extract the data from the API response (assuming the response structure)
 
